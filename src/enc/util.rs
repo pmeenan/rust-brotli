@@ -41,20 +41,23 @@ pub fn FastLog2(v: u64) -> floatX {
     }
 }
 
+/// Double-precision `log2`, matching C's `FastLog2` (which returns `double`):
+/// the f32 table below 256 (C's table entries are float literals), a full
+/// double-precision `log2` above.
 #[cfg(all(feature = "std", not(feature = "portable-float")))]
 #[inline(always)]
-pub fn FastLog2f64(v: u64) -> floatX {
+pub fn FastLog2f64(v: u64) -> f64 {
     if v < 256 {
-        logs_8[v as usize]
+        logs_8[v as usize] as f64
     } else {
-        (v as floatX).log2()
+        (v as f64).log2()
     }
 }
 
 #[cfg(any(not(feature = "std"), feature = "portable-float"))]
 #[inline(always)]
-pub fn FastLog2f64(v: u64) -> floatX {
-    FastLog2(v) as floatX
+pub fn FastLog2f64(v: u64) -> f64 {
+    FastLog2(v) as f64
 }
 
 #[inline]

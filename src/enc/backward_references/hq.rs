@@ -1065,7 +1065,7 @@ fn SetCost(histogram: &[u32], histogram_size: usize, literal_histogram: bool, co
         }
     }
 
-    let missing_symbol_cost = FastLog2f64(missing_symbol_sum) + 2.0;
+    let missing_symbol_cost = FastLog2f64(missing_symbol_sum) as floatX + 2.0;
     for i in 0..histogram_size {
         if histogram[i] == 0 {
             cost[i] = missing_symbol_cost;
