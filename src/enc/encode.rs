@@ -842,7 +842,10 @@ fn ChooseHasher(params: &mut BrotliEncoderParams) {
         hparams.block_bits = H9_BLOCK_BITS as i32;
         hparams.bucket_bits = H9_BUCKET_BITS as i32;
         hparams.hash_len = 4;
-    } else if params.quality == 9 {
+    } else if params.quality == 9 && (params.q9_5 || params.lgwin <= 16) {
+        // PARITY: C uses H5 (or H6) at q9. Keep Rust's H9 for the Rust-specific
+        // "q9.5" mode, and for lgwin <= 16, where C uses H42, which Rust doesn't
+        // implement (it would fall back to H6 and compress worse than H9).
         hparams.type_ = 9;
         hparams.num_last_distances_to_check = H9_NUM_LAST_DISTANCES_TO_CHECK as i32;
         hparams.block_bits = H9_BLOCK_BITS as i32;
