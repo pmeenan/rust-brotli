@@ -1238,8 +1238,9 @@ impl<Alloc: BrotliAlloc> BrotliEncoderStateStruct<Alloc> {
             return;
         }
         if dict_size == 0 || self.params.quality == 0 || self.params.quality == 1 || size <= 1 {
-            self.params.catable = true; // don't risk a too-short dictionary
-            self.params.appendable = true; // don't risk a too-short dictionary
+            // PARITY: like C, q0/q1 ignore the dictionary entirely. Don't switch
+            // to `catable`/`appendable` here: that disables the q0/q1 fast path
+            // and changes the stream layout.
             return;
         }
         self.custom_dictionary = true;
