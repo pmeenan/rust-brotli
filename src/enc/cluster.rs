@@ -7,15 +7,15 @@ use super::bit_cost::BrotliPopulationCost;
 use super::histogram::{
     CostAccessors, HistogramAddHistogram, HistogramClear, HistogramSelfAddHistogram,
 };
-use super::util::FastLog2;
+use super::util::FastLog2f64;
 use crate::enc::combined_alloc::{alloc_or_default, allocate};
 
 #[derive(Clone, Copy)]
 pub struct HistogramPair {
     pub idx1: u32,
     pub idx2: u32,
-    pub cost_combo: super::util::floatX,
-    pub cost_diff: super::util::floatX,
+    pub cost_combo: f64,
+    pub cost_diff: f64,
 }
 
 impl Default for HistogramPair {
@@ -31,11 +31,11 @@ impl Default for HistogramPair {
 }
 /* Returns entropy reduction of the context map when we combine two clusters. */
 #[inline(always)]
-fn ClusterCostDiff(size_a: usize, size_b: usize) -> super::util::floatX {
+fn ClusterCostDiff(size_a: usize, size_b: usize) -> f64 {
     let size_c: usize = size_a.wrapping_add(size_b);
-    size_a as (super::util::floatX) * FastLog2(size_a as u64)
-        + size_b as (super::util::floatX) * FastLog2(size_b as u64)
-        - size_c as (super::util::floatX) * FastLog2(size_c as u64)
+    size_a as (f64) * FastLog2f64(size_a as u64)
+        + size_b as (f64) * FastLog2f64(size_b as u64)
+        - size_c as (f64) * FastLog2f64(size_c as u64)
 }
 
 #[inline(always)]
@@ -97,7 +97,7 @@ fn BrotliCompareAndPushToQueue<
 
             let mut combo: HistogramType = out[idx1 as usize].clone();
             HistogramAddHistogram(&mut combo, &out[idx2 as usize]);
-            let cost_combo: super::util::floatX = BrotliPopulationCost(&combo, scratch_space);
+            let cost_combo: f64 = BrotliPopulationCost(&combo, scratch_space);
             if cost_combo < threshold - p.cost_diff {
                 p.cost_combo = cost_combo;
                 is_good_pair = true;
@@ -134,7 +134,7 @@ pub fn BrotliHistogramCombine<
     max_num_pairs: usize,
     scratch_space: &mut HistogramType::i32vec,
 ) -> usize {
-    let mut cost_diff_threshold: super::util::floatX = 0.0;
+    let mut cost_diff_threshold: f64 = 0.0;
     let mut min_cluster_size: usize = 1;
     let mut num_pairs: usize = 0usize;
     {
@@ -248,7 +248,7 @@ pub fn BrotliHistogramBitCostDistance<
     histogram: &HistogramType,
     candidate: &HistogramType,
     scratch_space: &mut HistogramType::i32vec,
-) -> super::util::floatX {
+) -> f64 {
     if histogram.total_count() == 0usize {
         0.0
     } else {
@@ -280,10 +280,10 @@ pub fn BrotliHistogramRemap<
         } else {
             symbols[i.wrapping_sub(1)]
         };
-        let mut best_bits: super::util::floatX =
+        let mut best_bits: f64 =
             BrotliHistogramBitCostDistance(&inp[i], &mut out[(best_out as usize)], scratch_space);
         for j in 0usize..num_clusters {
-            let cur_bits: super::util::floatX = BrotliHistogramBitCostDistance(
+            let cur_bits: f64 = BrotliHistogramBitCostDistance(
                 &inp[i],
                 &mut out[(clusters[j] as usize)],
                 scratch_space,

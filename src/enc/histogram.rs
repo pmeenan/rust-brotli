@@ -8,14 +8,14 @@ use super::command::Command;
 use super::constants::{
     kSigned3BitContextLookup, kUTF8ContextLookup, BROTLI_NUM_HISTOGRAM_DISTANCE_SYMBOLS,
 };
-use super::util::floatX;
+
 use super::vectorization::Mem256i;
 
 //#[derive(Clone)] clone is broken for arrays > 32
 pub struct HistogramLiteral {
     pub data_: [u32; 256],
     pub total_count_: usize,
-    pub bit_cost_: floatX,
+    pub bit_cost_: f64,
 }
 impl Clone for HistogramLiteral {
     #[inline(always)]
@@ -41,7 +41,7 @@ impl Default for HistogramLiteral {
 pub struct HistogramCommand {
     pub data_: [u32; 704],
     pub total_count_: usize,
-    pub bit_cost_: floatX,
+    pub bit_cost_: f64,
 }
 impl Clone for HistogramCommand {
     #[inline(always)]
@@ -68,7 +68,7 @@ impl Default for HistogramCommand {
 pub struct HistogramDistance {
     pub data_: [u32; BROTLI_NUM_HISTOGRAM_DISTANCE_SYMBOLS],
     pub total_count_: usize,
-    pub bit_cost_: floatX,
+    pub bit_cost_: f64,
 }
 impl Clone for HistogramDistance {
     fn clone(&self) -> HistogramDistance {
@@ -93,8 +93,8 @@ pub trait CostAccessors {
     type i32vec: Sized + SliceWrapper<Mem256i> + SliceWrapperMut<Mem256i>;
     fn make_nnz_storage() -> Self::i32vec;
     fn total_count(&self) -> usize;
-    fn bit_cost(&self) -> floatX;
-    fn set_bit_cost(&mut self, cost: floatX);
+    fn bit_cost(&self) -> f64;
+    fn set_bit_cost(&mut self, cost: f64);
     fn set_total_count(&mut self, count: usize);
 }
 impl SliceWrapper<u32> for HistogramLiteral {
@@ -207,11 +207,11 @@ impl CostAccessors for HistogramLiteral {
         self.total_count_
     }
     #[inline(always)]
-    fn bit_cost(&self) -> floatX {
+    fn bit_cost(&self) -> f64 {
         self.bit_cost_
     }
     #[inline(always)]
-    fn set_bit_cost(&mut self, data: floatX) {
+    fn set_bit_cost(&mut self, data: f64) {
         self.bit_cost_ = data;
     }
     #[inline(always)]
@@ -249,11 +249,11 @@ impl CostAccessors for HistogramCommand {
         self.total_count_
     }
     #[inline(always)]
-    fn bit_cost(&self) -> floatX {
+    fn bit_cost(&self) -> f64 {
         self.bit_cost_
     }
     #[inline(always)]
-    fn set_bit_cost(&mut self, data: floatX) {
+    fn set_bit_cost(&mut self, data: f64) {
         self.bit_cost_ = data;
     }
     #[inline(always)]
@@ -292,11 +292,11 @@ impl CostAccessors for HistogramDistance {
         self.total_count_
     }
     #[inline(always)]
-    fn bit_cost(&self) -> floatX {
+    fn bit_cost(&self) -> f64 {
         self.bit_cost_
     }
     #[inline(always)]
-    fn set_bit_cost(&mut self, data: floatX) {
+    fn set_bit_cost(&mut self, data: f64) {
         self.bit_cost_ = data;
     }
     #[inline(always)]

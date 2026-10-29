@@ -1334,11 +1334,11 @@ fn should_compress(
     num_commands: usize,
 ) -> bool {
     const K_SAMPLE_RATE: u32 = 13;
-    const K_MIN_ENTROPY: floatX = 7.92;
+    const K_MIN_ENTROPY: f64 = 7.92;
 
-    if num_commands < (bytes >> 8) + 2 && num_literals as floatX > 0.99 * bytes as floatX {
+    if num_commands < (bytes >> 8) + 2 && num_literals as f64 > 0.99 * bytes as f64 {
         let mut literal_histo = [0u32; 256];
-        let bit_cost_threshold = (bytes as floatX) * K_MIN_ENTROPY / (K_SAMPLE_RATE as floatX);
+        let bit_cost_threshold = (bytes as f64) * K_MIN_ENTROPY / (K_SAMPLE_RATE as f64);
         let t = bytes
             .wrapping_add(K_SAMPLE_RATE as usize)
             .wrapping_sub(1)
@@ -1740,7 +1740,7 @@ fn ChooseContextMap(
     let mut two_prefix_histo = [0u32; 6];
 
     let mut i: usize;
-    let mut entropy = [0.0 as floatX; 4];
+    let mut entropy = [0.0 as f64; 4];
     i = 0usize;
     while i < 9usize {
         {
@@ -1767,7 +1767,7 @@ fn ChooseContextMap(
     let total: usize = monogram_histo[0]
         .wrapping_add(monogram_histo[1])
         .wrapping_add(monogram_histo[2]) as usize;
-    entropy[0] = 1.0 / (total as floatX);
+    entropy[0] = 1.0 / (total as f64);
     entropy[1] *= entropy[0];
     entropy[2] *= entropy[0];
     entropy[3] *= entropy[0];
@@ -1828,7 +1828,7 @@ fn ShouldUseComplexStaticContextMap(
         let mut combined_histo: [u32; 32] = [0; 32];
         let mut context_histo: [[u32; 32]; 13] = [[0; 32]; 13];
         let mut total = 0u32;
-        let mut entropy = [0.0 as floatX; 3];
+        let mut entropy = [0.0 as f64; 3];
         let utf8_lut = BROTLI_CONTEXT_LUT(ContextType::CONTEXT_UTF8);
         while start_pos + 64 <= end_pos {
             let stride_end_pos = start_pos + 64;
@@ -1856,7 +1856,7 @@ fn ShouldUseComplexStaticContextMap(
             assert!(i < 13);
             entropy[2] += shannon_entropy(&context_histo[i][..], 32).0;
         }
-        entropy[0] = 1.0 / (total as floatX);
+        entropy[0] = 1.0 / (total as f64);
         entropy[1] *= entropy[0];
         entropy[2] *= entropy[0];
         /* The triggering heuristics below were tuned by compressing the individual
