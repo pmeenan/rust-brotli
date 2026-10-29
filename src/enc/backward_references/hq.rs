@@ -273,7 +273,7 @@ pub fn StitchToPreviousBlockH10<
         /* Store the last `MAX_TREE_COMP_LENGTH - 1` positions in the hasher.
         These could not be calculated before, since they require knowledge
         of both the previous and the current block. */
-        let i_start = position - Params::max_tree_comp_length() as usize;
+        let i_start = position - Params::max_tree_comp_length() as usize + 1;
         let i_end = min(position, i_start.wrapping_add(num_bytes));
         for i in i_start..i_end {
             /* Maximum distance is window size - 16, see section 9.1. of the spec.
