@@ -2515,12 +2515,23 @@ fn CreateBackwardReferences<AH: AnyHasher>(
             }
             *num_literals = num_literals.wrapping_add(insert_length);
             insert_length = 0usize;
-            hasher.StoreRange(
-                ringbuffer,
-                ringbuffer_mask,
-                position.wrapping_add(2),
-                min(position.wrapping_add(sr.len), store_end),
-            );
+            {
+                // PARITY: C avoids hash poisoning with RLE data: for copies with
+                // `distance < len / 4` only the last `4 * distance` positions are
+                // stored (brotli a629289).
+                let mut range_start = position.wrapping_add(2);
+                let range_end = min(position.wrapping_add(sr.len), store_end);
+                if sr.distance < (sr.len >> 2) {
+                    range_start = min(
+                        range_end,
+                        max(
+                            range_start,
+                            position.wrapping_add(sr.len).wrapping_sub(sr.distance << 2),
+                        ),
+                    );
+                }
+                hasher.StoreRange(ringbuffer, ringbuffer_mask, range_start, range_end);
+            }
             position = position.wrapping_add(sr.len);
         } else {
             insert_length = insert_length.wrapping_add(1);
